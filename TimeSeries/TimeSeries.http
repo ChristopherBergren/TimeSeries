@@ -1,0 +1,6 @@
+@TimeSeries_HostAddress = http://localhost:5087
+
+GET {{TimeSeries_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
