@@ -1,7 +1,11 @@
+using FluentValidation;
+using MediatR;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
-using TimeSeries.Extensions;
+using TimeSeries.Api.Extensions;
+using TimeSeries.Application.Behaviors;
+using TimeSeries.Application.Validators;
 
 namespace TimeSeries
 {
@@ -15,11 +19,14 @@ namespace TimeSeries
             // Använd SeriLog (olika settings beroende på miljö)
             builder.UseCustomSerilog();
 
-            // Add services to the container.
-
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            // Registrera alla validatorer och MediatR-hanterare
+            builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
+            builder.Services.AddValidatorsFromAssemblyContaining<GetTimeSeriesQueryValidator>();
+            builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
             var app = builder.Build();
 

@@ -5,7 +5,7 @@ using Serilog.Formatting.Compact;
 using Serilog.Formatting.Json;
 using Serilog.Sinks.Seq;
 
-namespace TimeSeries.Extensions
+namespace TimeSeries.Api.Extensions
 {
     public static class SerilogExtensions
     {

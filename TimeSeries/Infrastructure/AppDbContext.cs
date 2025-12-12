@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-namespace TimeSeries.Data
+namespace TimeSeries.Infrastructure
 {
     public class AppDbContext : DbContext
     {
