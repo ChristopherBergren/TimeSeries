@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/TimeSeries/app.db
+/TimeSeries/app.db-shm
+/TimeSeries/app.db-wal
