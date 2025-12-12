@@ -19,7 +19,7 @@ namespace TimeSeries.Api.Extensions
             // ------------------------
             // Konfigurera per dev/övrig-miljö
             // ------------------------
-            if (!isDevelopment)
+            if (isDevelopment)
             {
                 loggerConfig
                     // Utelämnar systemdata-loggningar för läsbarhet
@@ -47,9 +47,13 @@ namespace TimeSeries.Api.Extensions
                     ));
             }
 
+            // Filtrera bort denna varning då det ej är prod-miljö (MediatR kräver numer licens i prod)
+            loggerConfig.MinimumLevel.Override("LuckyPennySoftware.MediatR", Serilog.Events.LogEventLevel.Fatal);
+
             Log.Logger = loggerConfig.CreateLogger();
             builder.Host.UseSerilog();
 
+            
             return builder;
         }
     }

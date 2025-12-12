@@ -38,10 +38,6 @@
 
   <ItemGroup>
     <Folder Include="Logs\" />
-    <Folder Include="Api\Extensions\" />
-    <Folder Include="Domain\Entities\" />
-    <Folder Include="Domain\" />
-    <Folder Include="Application\Services\" />
   </ItemGroup>
 
 </Project>

@@ -4,31 +4,48 @@ using Serilog;
 using TimeSeries.Application.Queries;
 using TimeSeries.Application.Commands;
 using TimeSeries.Application.Responses;
+using System.ComponentModel.DataAnnotations;
 
 namespace TimeSeries.Api.Controllers
 {
     [ApiController]
-    [Route("[controller]/api")]
+    [Route("api/timeseries")]
     public class TimeSeriesController(IMediator mediator,
     IConfiguration configuration) : ControllerBase
     {
         private readonly IConfiguration _configuration = configuration;
         private readonly IMediator _mediator = mediator;
 
-
-        [HttpGet("parse")]
-        [ProducesResponseType(typeof(GetTimeSeriesResponse), StatusCodes.Status200OK)]
+        [HttpPost("parse")]
+        [ProducesResponseType(typeof(UpsertTimeSeriesResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetTimeSeries(GetTimeSeriesQuery query, CancellationToken cancellationToken) 
+        public async Task<IActionResult> GetTimeSeries(UpsertTimeSeriesCommand command)
         {
             try
             {
-                GetTimeSeriesResponse result = await _mediator.Send(query, cancellationToken);
+                UpsertTimeSeriesResponse result = await _mediator.Send(command, HttpContext.RequestAborted);
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (FluentValidation.ValidationException ex)
             {
-                Log.Error(ex, $"Exception in GetTimeSeries: {ex.Message}\n{ex.StackTrace}");
+                Log.Error(ex, $"Validation failed in GetTimeSeries: {ex.Message}\n{ex.StackTrace}");
+                return BadRequest();
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(GetTimeSeriesResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetTimeSeries(GetTimeSeriesQuery query) 
+        {
+            try
+            {
+                GetTimeSeriesResponse result = await _mediator.Send(query, HttpContext.RequestAborted);
+                return Ok(result);
+            }
+            catch (ValidationException ex)
+            {
+                Log.Error(ex, $"Validation failed in GetTimeSeries: {ex.Message}\n{ex.StackTrace}");
                 return BadRequest();
             }
         }
