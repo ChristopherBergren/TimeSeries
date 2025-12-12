@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using TimeSeries.Api.Extensions;
 using TimeSeries.Application.Models;
+using TimeSeries.Domain.Enums;
 
 namespace TimeSeries.Application.Validators
 {
@@ -12,14 +13,16 @@ namespace TimeSeries.Application.Validators
                 .NotNull()
                 .LessThan(0);
             RuleFor(x => x.TimestampUTC)
-                .NotNull()
                 .IsUtc();
             RuleFor(x => x.Timestamp)
-                .NotNull();
+                .IsNullOrDateTime();
             RuleFor(x => x.Mba)
                 .NotNull()
                 .IsValidMBA();
             RuleFor(x => x.MgaCode)
+                .NotNull()
+                .NotEmpty();
+            RuleFor(x => x.MgaName)
                 .NotNull()
                 .NotEmpty();
 

@@ -12,9 +12,7 @@ namespace TimeSeries.Application.Handlers
     {
         public async Task<UpsertTimeSeriesResponse> Handle(UpsertTimeSeriesCommand command, CancellationToken cancellationToken)
         {
-            await profileService.UpsertTimeSeries(command.TimeSeries!, command.Unit, cancellationToken);
-
-            var response = new UpsertTimeSeriesResponse();
+            var response = await profileService.UpsertTimeSeries(command.TimeSeries!, command.Unit, cancellationToken);
 
             return response;
         }

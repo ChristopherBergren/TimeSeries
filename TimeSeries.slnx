@@ -1,3 +1,5 @@
 <Solution>
+  <Project Path="TimeSeries.IntegrationTests/TimeSeries.IntegrationTests.csproj" Id="7e947e4c-1ad1-4b24-b0f7-34cd8af1a684" />
+  <Project Path="TimeSeries.Tests/TimeSeries.Tests.csproj" Id="8c60a002-13d3-4f0c-a279-e6ca9d6c3079" />
   <Project Path="TimeSeries/TimeSeries.csproj" />
 </Solution>

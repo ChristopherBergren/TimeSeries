@@ -3,6 +3,7 @@ using FluentValidation;
 using Serilog;
 using TimeSeries.Application.Interfaces;
 using TimeSeries.Application.Models;
+using TimeSeries.Application.Responses;
 using TimeSeries.Domain.Enums;
 using TimeSeries.Infrastructure;
 
@@ -10,11 +11,8 @@ namespace TimeSeries.Application.Services
 {
     public class LoadProfileService(IValidator<TimeSeriesDto> validator, ILoadProfileRepository loadProfileRepository) : ILoadProfileService
     {
-        public async Task UpsertTimeSeries(List<TimeSeriesDto> timeSeries, MeasurementUnit unit, CancellationToken cancellationToken)
+        public async Task<UpsertTimeSeriesResponse> UpsertTimeSeries(List<TimeSeriesDto> timeSeries, MeasurementUnit unit, CancellationToken cancellationToken)
         {
-            // cancellationToken.ThrowIfCancellationRequested();
-
-
             var validOrders = new List<TimeSeriesDto>();
             var failedOrders = new List<(TimeSeriesDto Order, string Error)>();
 
@@ -32,7 +30,15 @@ namespace TimeSeries.Application.Services
                 }
             }
 
-            await loadProfileRepository.UpsertLoadProfileAsync(cancellationToken);
+            UpsertResult upsertResult = await loadProfileRepository.UpsertLoadProfileAsync(validOrders, cancellationToken);
+
+            return new UpsertTimeSeriesResponse
+            {
+                ReadCount = timeSeries.Count,
+                InsertCount = upsertResult.Inserted,
+                UpdateCount = upsertResult.Updated,
+                FailedCount = failedOrders.Count
+            };
         }
     }
 }

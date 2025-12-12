@@ -1,0 +1,121 @@
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualStudio.TestPlatform.TestHost;
+using Moq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using TimeSeries.Application.Commands;
+using TimeSeries.Application.Interfaces;
+using TimeSeries.Application.Models;
+using TimeSeries.Application.Responses;
+using TimeSeries.Domain.Enums;
+using Xunit;
+
+namespace TimeSeries.IntegrationTests
+{
+    public class LoadProfileControllerEndToEndTests : IClassFixture<WebApplicationFactory<Program>>
+    {
+        private readonly WebApplicationFactory<Program> _factory;
+
+        public LoadProfileControllerEndToEndTests(WebApplicationFactory<Program> factory)
+        {
+            _factory = factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
+                {
+                    // Ersätt repot med en mock 
+                    var repoDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(ILoadProfileRepository));
+                    if (repoDescriptor != null) services.Remove(repoDescriptor);
+
+                    var mockRepo = new Mock<ILoadProfileRepository>();
+                    mockRepo.Setup(r => r.UpsertLoadProfileAsync(
+                         It.IsAny<List<TimeSeriesDto>>(),
+                         It.IsAny<CancellationToken>()))
+                         .ReturnsAsync((List<TimeSeriesDto> list, CancellationToken ct) =>
+                         {
+                             // Samma duplicerings-logik som BulkMerge:
+                             // Unik nyckel: (Timestamp, Mba, MgaCode)
+
+                             var groups = list
+                                 .GroupBy(x => new { x.Timestamp, x.Mba, x.MgaCode })
+                                 .ToList();
+
+                             int inserted = 0;
+                             int updated = 0;
+
+                             foreach (var g in groups)
+                             {
+                                 inserted += 1;          // första i gruppen = insert
+                                 updated += g.Count() - 1; // övriga = updates
+                             }
+
+                             return new UpsertResult(inserted, updated);
+                         });
+
+
+                    services.AddSingleton(mockRepo.Object);
+                });
+            });
+        }
+
+        [Theory]
+        [MemberData(nameof(GetUpsertTestData))]
+        public async Task PostParse_ShouldReturnCorrectCounts(List<TimeSeriesDto> input, int expectedRead, int expectedInsert, int expectedUpdate, int expectedFailed)
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            var command = new UpsertTimeSeriesCommand { TimeSeries = input, Unit = MeasurementUnit.MWh };
+
+            // Act
+            var response = await client.PostAsJsonAsync("/api/timeseries/parse", command);
+
+            response.EnsureSuccessStatusCode();
+
+            var result = await response.Content.ReadFromJsonAsync<UpsertTimeSeriesResponse>(
+                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(expectedRead, result.ReadCount);
+            Assert.Equal(expectedInsert, result.InsertCount);
+            Assert.Equal(expectedUpdate, result.UpdateCount);
+            Assert.Equal(expectedFailed, result.FailedCount);
+        }
+
+        // Test-data
+        public static IEnumerable<object[]> GetUpsertTestData()
+        {
+            var timestamp = DateTime.UtcNow;
+
+            // Scenario 1: 3 giltiga, 1 ogiltig (Quantity > 0)
+            var input1 = new List<TimeSeriesDto>
+        {
+            new() { Mba = "SE1", MgaCode = "ALS", MgaName = "Alingsås", Quantity = -2.0, Timestamp = timestamp, TimestampUTC = timestamp },
+            new() { Mba = "SE1", MgaCode = "ALS", MgaName = "Alingsås", Quantity = -3.0, Timestamp = timestamp, TimestampUTC = timestamp }, // duplicate
+            new() { Mba = "SE1", MgaCode = "AMS", MgaName = "Almnäs", Quantity = -2.5, Timestamp = timestamp, TimestampUTC = timestamp },
+            new() { Mba = "SE99", MgaCode = "AMS", MgaName = "Almnäs", Quantity = 2.0, Timestamp = timestamp, TimestampUTC = timestamp } // invalid
+        };
+            yield return new object[] { input1, 4, 2, 1, 1 };
+
+            // Scenario 2: alla giltiga
+            var input2 = new List<TimeSeriesDto>
+        {
+            new() { Mba = "SE1", MgaCode = "ALS", MgaName = "Alingsås", Quantity = -1.0, Timestamp = timestamp, TimestampUTC = timestamp },
+            new() { Mba = "SE2", MgaCode = "AMS", MgaName = "Almnäs", Quantity = -2.0, Timestamp = timestamp, TimestampUTC = timestamp }
+        };
+            yield return new object[] { input2, 2, 2, 0, 0 };
+
+            // Scenario 3: alla ogiltiga (nulls eller Quantity >= 0)
+            var input3 = new List<TimeSeriesDto>
+        {
+            new() { Mba = null, MgaCode = "", MgaName = "", Quantity = 1.0, Timestamp = null, TimestampUTC = null },
+            new() { Mba = "SE100", MgaCode = "XXX", MgaName = "", Quantity = 0, Timestamp = timestamp, TimestampUTC = timestamp }
+        };
+            yield return new object[] { input3, 2, 0, 0, 2 };
+        }
+    }
+}

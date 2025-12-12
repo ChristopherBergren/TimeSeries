@@ -1,11 +1,21 @@
 ﻿using FluentValidation;
 using FluentValidation.Validators;
 using System;
+using TimeSeries.Domain.Services;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TimeSeries.Api.Extensions
 {
     public static class ValidationRuleExtensions
     {
+        // Validera att indata är DateTime eller null
+        public static IRuleBuilderOptions<T, DateTime?> IsNullOrDateTime<T>(
+            this IRuleBuilder<T, DateTime?> ruleBuilder)
+        {
+            return ruleBuilder
+                .Must(dt => !dt.HasValue || !dt.Equals(default(DateTime)))
+                .WithMessage("{PropertyName} must be in UTC.");
+        }
         // Validera att datum är i UTC
         public static IRuleBuilderOptions<T, DateTime> IsUtc<T>(
             this IRuleBuilder<T, DateTime> ruleBuilder)
@@ -20,18 +30,16 @@ namespace TimeSeries.Api.Extensions
             this IRuleBuilder<T, DateTime?> ruleBuilder)
         {
             return ruleBuilder
-                .Must(dt => !dt.HasValue || dt.Value.Kind == DateTimeKind.Utc)
+                .Must(dt => dt.HasValue && dt.Value.Kind == DateTimeKind.Utc)
                 .WithMessage("{PropertyName} must be in UTC if specified.");
         }
 
         // Validera värde på MBA
-        // Hårdkodade värden här. Kan utökas till att hämta värdena från GET MBAOptions
         public static IRuleBuilderOptions<T, string?> IsValidMBA<T>(
           this IRuleBuilder<T, string?> ruleBuilder)
         {
-            string[] stringArray = { "SE1", "SE2", "SE3", "SE4" };
             return ruleBuilder
-                .Must(s => string.IsNullOrWhiteSpace(s) || stringArray.Any(s.Contains))
+                .Must(mba => LoadProfileRules.IsValidMba(mba))
                 .WithMessage("{PropertyName} has an invalid value.");
         }
     }
