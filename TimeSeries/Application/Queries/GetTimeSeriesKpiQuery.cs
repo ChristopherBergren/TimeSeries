@@ -1,7 +1,7 @@
 ﻿using MediatR;
-using TimeSeries.Application.Responses;
+using TimeSeriesRoot.Application.Responses;
 
-namespace TimeSeries.Application.Queries
+namespace TimeSeriesRoot.Application.Queries
 {
     public record GetTimeSeriesKpiQuery : IRequest<GetTimeSeriesKpiResponse>
     {

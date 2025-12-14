@@ -1,8 +1,8 @@
 ﻿using MediatR;
-using TimeSeries.Application.Queries;
-using TimeSeries.Application.Responses;
+using TimeSeriesRoot.Application.Queries;
+using TimeSeriesRoot.Application.Responses;
 
-namespace TimeSeries.Application.Handlers
+namespace TimeSeriesRoot.Application.Handlers
 {
     internal class GetTimeSeriesKpiQueryHandler
         : IRequestHandler<GetTimeSeriesKpiQuery, GetTimeSeriesKpiResponse>

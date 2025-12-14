@@ -1,13 +1,11 @@
 ﻿using MediatR;
-using TimeSeries.Application.Models;
-using TimeSeries.Application.Responses;
-using TimeSeries.Domain.Enums;
+using TimeSeriesRoot.Application.Responses;
 
-namespace TimeSeries.Application.Queries
+namespace TimeSeriesRoot.Application.Queries
 {
     public record GetTimeSeriesQuery : IRequest<GetTimeSeriesResponse>
     {
-        public EnergyUnit Unit { get; set; }
-        public List<TimeSeriesDto>? TimeSeries { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
     }
 }

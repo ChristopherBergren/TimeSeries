@@ -1,15 +1,16 @@
 ﻿using MediatR;
-using TimeSeries.Application.Commands;
-using TimeSeries.Application.Responses;
+using TimeSeriesRoot.Application.Commands;
+using TimeSeriesRoot.Application.Interfaces;
+using TimeSeriesRoot.Application.Responses;
 
-namespace TimeSeries.Application.Handlers
+namespace TimeSeriesRoot.Application.Handlers
 {
-    internal class ImportTimeSeriesCommandHandler()
-        : IRequestHandler<ImportTimeSeriesCommand, ImportTimeSeriesResponse>
+    internal class ImportTimeSeriesCommandHandler(IImportService profileService)
+                : IRequestHandler<ImportTimeSeriesCommand, ImportTimeSeriesResponse>
     {
         public async Task<ImportTimeSeriesResponse> Handle(ImportTimeSeriesCommand command, CancellationToken cancellationToken)
         {
-            var response = new ImportTimeSeriesResponse();
+            var response = await profileService.ImportTimeSeries(command.TimeSeries!, command.Unit, cancellationToken);
 
             return response;
         }

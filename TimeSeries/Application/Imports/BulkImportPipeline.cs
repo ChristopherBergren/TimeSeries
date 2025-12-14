@@ -1,19 +1,18 @@
 ﻿using FluentValidation;
 using Serilog;
 using System.Collections.Concurrent;
-using System.IO;
-using TimeSeries.Application.Interfaces;
-using TimeSeries.Application.Models;
+using TimeSeriesRoot.Application.Interfaces;
+using TimeSeriesRoot.Application.Models;
 
-namespace TimeSeries.Application.Imports
+namespace TimeSeriesRoot.Application.Imports
 {
     public class BulkImportPipeline
     {
         private static readonly SemaphoreSlim _entryLock = new(1, 1);
         private readonly IValidator<TimeSeriesDto> _validator;
-        private readonly ILoadProfileRepository _repository;
+        private readonly ITimeSeriesRepository _repository;
 
-        public BulkImportPipeline(IValidator<TimeSeriesDto> validator, ILoadProfileRepository repository)
+        public BulkImportPipeline(IValidator<TimeSeriesDto> validator, ITimeSeriesRepository repository)
         {
             _repository = repository;
             _validator = validator;
@@ -83,9 +82,9 @@ namespace TimeSeries.Application.Imports
             // Steg 3: Merga resultaten och sänd till repository
             var validTimeSeries = results.SelectMany(r => r.ValidTimeSeries).ToList();
             var failedCount = results.Sum(r => r.FailedCount);
-            var upsertResult = await _repository.UpsertLoadProfileAsync(validTimeSeries, cancellationToken);
+            var dbImportResult = await _repository.ImportTimeSeriesAsync(validTimeSeries, cancellationToken);
 
-            return new ImportResult(true, validTimeSeries.Count + failedCount, upsertResult.Updated, upsertResult.Inserted, failedCount);
+            return new ImportResult(true, validTimeSeries.Count + failedCount, dbImportResult.Updated, dbImportResult.Inserted, failedCount);
         }
 
         private static (bool hasFiles, string[]? filePaths) GetFilePaths(string folder)
@@ -96,7 +95,7 @@ namespace TimeSeries.Application.Imports
                 return (false, null);
             }
 
-            var files = System.IO.Directory.GetFiles(folder, "*.csv;*.json", new EnumerationOptions() { IgnoreInaccessible = true, RecurseSubdirectories = true });
+            var files = System.IO.Directory.GetFiles(folder, "*.*", new EnumerationOptions() { IgnoreInaccessible = true, RecurseSubdirectories = true });
 
             return ((files.Length > 0), files);
         }

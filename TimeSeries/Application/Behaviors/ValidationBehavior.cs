@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using MediatR;
-namespace TimeSeries.Application.Behaviors
+namespace TimeSeriesRoot.Application.Behaviors
 {
      public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : notnull

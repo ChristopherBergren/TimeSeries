@@ -1,14 +1,10 @@
-﻿using FluentValidation;
-using Microsoft.VisualStudio.TestPlatform.PlatformAbstractions.Interfaces;
-using Moq;
-using System.IO;
-using System.Reflection.PortableExecutable;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
-using TimeSeries.Application.Models;
-using TimeSeries.Application.Validators;
-using TimeSeries.Domain.Enums;
+using TimeSeriesRoot.Application.Models;
+using TimeSeriesRoot.Application.Validators;
+using TimeSeriesRoot.Domain.Enums;
 
-namespace TimeSeries.Application.Imports
+namespace TimeSeriesRoot.Application.Imports
 {
     public partial class CsvImportReader
     {
@@ -33,11 +29,14 @@ namespace TimeSeries.Application.Imports
             EnergyUnit? energyUnit;
 
             // Läs in csv:n till lista
-            using (var reader = new StreamReader(filePath, new FileStreamOptions { Access = FileAccess.Read, Mode = FileMode.Open }))
+            using (var sr = new StreamReader(filePath, new FileStreamOptions { Access = FileAccess.Read, Mode = FileMode.Open }))
             {
-                var line = reader.ReadLine();
-                if(!string.IsNullOrEmpty(line?.Trim()))
-                    rows.Add(line);
+                while (sr.Peek() >= 0)
+                {
+                    var line = sr.ReadLine();
+                    if (!string.IsNullOrEmpty(line?.Trim()))
+                        rows.Add(line);
+                }
             }
 
             // Försök hämta energi-enhet från Quantity-headern. Om den saknas utförs inte importen
@@ -64,19 +63,21 @@ namespace TimeSeries.Application.Imports
                 if (valid)
                 {
                     // Validera samtliga fält och lägg till om ok
-                    if (DateTime.TryParse(columns![(int)Fields.Date], out DateTime date))
+                    var date = BusinessRules.ConvertESettCsvDateToDateTime(columns![(int)Fields.Date]);
+                    if (date!=null)
                     {
                         series.Timestamp = date;
-                        series.TimestampUTC = date.ToUniversalTime();
+                        series.TimestampUTC = ((DateTime)date!).ToUniversalTime();
 
                         var mba = columns[(int)Fields.MBA];
                         if (BusinessRules.IsValidMba(mba))
                         {
                             series.Mba = mba;
                             series.MgaName = columns[(int)Fields.MGA];
-                            series.MgaCode = "[Saknas]"; // Saknas i csv-filerna
+                            series.MgaCode = series.MgaName; // Saknas i csv-filerna. Använd MgaName då fältet är obligatoriskt
 
-                            if (double.TryParse(columns[(int)Fields.Quantity].Replace(",", "."), out double quantity))
+                            if (double.TryParse(columns[(int)Fields.Quantity].Replace(",", "."),
+                                NumberStyles.Float, CultureInfo.InvariantCulture, out double quantity))
                             {
                                 series.Quantity = quantity;
 

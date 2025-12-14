@@ -1,13 +1,13 @@
 using MediatR;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using System.ComponentModel.DataAnnotations;
-using TimeSeries.Application.Commands;
-using TimeSeries.Application.Queries;
-using TimeSeries.Application.Responses;
+using TimeSeriesRoot.Application.Commands;
+using TimeSeriesRoot.Application.Queries;
+using TimeSeriesRoot.Application.Responses;
+using TimeSeriesRoot.Domain.Enums;
 
-namespace TimeSeries.Api.Controllers
+namespace TimeSeriesRoot.Api.Controllers
 {
     [ApiController]
     [Route("api/timeseries")]
@@ -22,21 +22,21 @@ namespace TimeSeries.Api.Controllers
         /// <summary>
         /// Import Time Series
         /// </summary>
-        /// <param name="command"></param>
+        /// <param name="command"></param> 
         /// <returns></returns>
         [HttpPost("parse")]
-        [ProducesResponseType(typeof(UpsertTimeSeriesResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ImportTimeSeriesResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> ImportTimeSeries(UpsertTimeSeriesCommand command)
+        public async Task<IActionResult> ImportTimeSeries(ImportTimeSeriesCommand command)
         {
             try
             {
-                UpsertTimeSeriesResponse result = await _mediator.Send(command, HttpContext.RequestAborted);
+                ImportTimeSeriesResponse result = await _mediator.Send(command, HttpContext.RequestAborted);
                 return Ok(result);
             }
             catch (FluentValidation.ValidationException ex)
             {
-                Log.Error(ex, $"Validation failed in GetTimeSeries: {ex.Message}\n{ex.StackTrace}");
+                Log.Error(ex, $"Validation failed in ImportTimeSeries: {ex.Message}\n{ex.StackTrace}");
                 return BadRequest();
             }
         }
@@ -47,18 +47,18 @@ namespace TimeSeries.Api.Controllers
         /// <param name="command"></param>
         /// <returns></returns>
         [HttpPost("collect")]
-        [ProducesResponseType(typeof(UpsertTimeSeriesResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ImportTimeSeriesResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> BulkImportTimeSeries(UpsertTimeSeriesCommand command)
+        public async Task<IActionResult> BulkImportTimeSeries()
         {
             try
             {
-                UpsertTimeSeriesResponse result = await _mediator.Send(command, HttpContext.RequestAborted);
+                ImportTimeSeriesResponse result = await _mediator.Send(new BulkImportTimeSeriesCommand(), HttpContext.RequestAborted);
                 return Ok(result);
             }
             catch (FluentValidation.ValidationException ex)
             {
-                Log.Error(ex, $"Validation failed in GetTimeSeries: {ex.Message}\n{ex.StackTrace}");
+                Log.Error(ex, $"Validation failed in BulkImportTimeSeries: {ex.Message}\n{ex.StackTrace}");
                 return BadRequest();
             }
         }
@@ -66,10 +66,11 @@ namespace TimeSeries.Api.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(GetTimeSeriesResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetTimeSeries(GetTimeSeriesQuery query) 
+        public async Task<IActionResult> GetTimeSeries(int page, int pageSize)
         {
             try
             {
+                var query = new GetTimeSeriesQuery { Page = page, PageSize = pageSize };
                 GetTimeSeriesResponse result = await _mediator.Send(query, HttpContext.RequestAborted);
                 return Ok(result);
             }
@@ -79,5 +80,24 @@ namespace TimeSeries.Api.Controllers
                 return BadRequest();
             }
         }
+
+        [HttpGet("{id}/data")]
+        [ProducesResponseType(typeof(GetTimeSeriesByIdResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetTimeSeriesById(Guid id, string unit, int start, int end)
+        {
+            try
+            {
+                var query = new GetTimeSeriesByIdQuery { Id = id, Start = start, End = end  };
+                GetTimeSeriesByIdResponse result = await _mediator.Send(query, HttpContext.RequestAborted);
+                return Ok(result);
+            }
+            catch (ValidationException ex)
+            {
+                Log.Error(ex, $"Validation failed in GetTimeSeriesById: {ex.Message}\n{ex.StackTrace}");
+                return BadRequest();
+            }
+        }
+
     }
 }

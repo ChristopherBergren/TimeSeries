@@ -1,27 +1,16 @@
-﻿using FluentValidation;
-using MediatR;
-using System.ComponentModel.DataAnnotations;
-using TimeSeries.Application.Models;
-using TimeSeries.Application.Queries;
-using TimeSeries.Application.Responses;
+﻿using MediatR;
+using TimeSeriesRoot.Application.Interfaces;
+using TimeSeriesRoot.Application.Queries;
+using TimeSeriesRoot.Application.Responses;
 
-namespace TimeSeries.Application.Handlers
+namespace TimeSeriesRoot.Application.Handlers
 {
-    internal class GetTimeSeriesQueryHandler
+    internal class GetTimeSeriesQueryHandler(ITimeSeriesService getTimeSeriesService)
         : IRequestHandler<GetTimeSeriesQuery, GetTimeSeriesResponse>
     {
-      
-
-        public GetTimeSeriesQueryHandler() {
-           
-        }
-
         public async Task<GetTimeSeriesResponse> Handle(GetTimeSeriesQuery query, CancellationToken cancellationToken)
         {
-            
-
-
-            var response = new GetTimeSeriesResponse();
+            var response = await getTimeSeriesService.GetTimeSeries(query.Page, query.PageSize);
 
             return response;
         }

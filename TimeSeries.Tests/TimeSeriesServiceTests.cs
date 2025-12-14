@@ -2,23 +2,18 @@
 using FluentValidation.Results;
 using Microsoft.Extensions.Options;
 using Moq;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using TimeSeries.Application.Interfaces;
-using TimeSeries.Application.Models;
-using TimeSeries.Application.Services;
-using TimeSeries.Domain.Enums;
-using Xunit;
+using TimeSeriesRoot.Application.Interfaces;
+using TimeSeriesRoot.Application.Models;
+using TimeSeriesRoot.Application.Services;
+using TimeSeriesRoot.Domain.Enums;
 
 namespace TimeSeries.Tests
 {
-    public class LoadProfileServiceTests
+    public class TimeSeriesServiceTests
     {
         [Theory]
         [MemberData(nameof(GetTimeSeriesTestData))]
-        public async Task UpsertTimeSeries_Should_CallRepositoryCorrectly_AndReturnCorrectCounts(
+        public async Task ImportTimeSeries_Should_CallRepositoryCorrectly_AndReturnCorrectCounts(
             List<TimeSeriesDto> input,
             List<TimeSeriesDto> expectedValidEntries,
             int expectedInserted,
@@ -26,7 +21,7 @@ namespace TimeSeries.Tests
         {
             // Arrange
             var mockValidator = new Mock<IValidator<TimeSeriesDto>>();
-            var mockRepo = new Mock<ILoadProfileRepository>();
+            var mockRepo = new Mock<ITimeSeriesRepository>();
             var mockOptions = new Mock<IOptions<Settings>>();
 
             // Mock validator: markera enbart expectedValidEntries som giltiga
@@ -43,7 +38,7 @@ namespace TimeSeries.Tests
                 });
 
             // Mock repository: simulera insert/update-logig som verkliga BulkMerge
-            mockRepo.Setup(r => r.UpsertLoadProfileAsync(It.IsAny<List<TimeSeriesDto>>(), It.IsAny<CancellationToken>()))
+            mockRepo.Setup(r => r.ImportTimeSeriesAsync(It.IsAny<List<TimeSeriesDto>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((List<TimeSeriesDto> list, CancellationToken ct) =>
                 {
                     var groups = list.GroupBy(x => new { x.Timestamp, x.Mba, x.MgaCode });
@@ -53,7 +48,7 @@ namespace TimeSeries.Tests
                         inserted += 1;                // första i gruppen = insert
                         updated += g.Count() - 1;     // övriga = updates
                     }
-                    return new UpsertResult(inserted, updated);
+                    return new DbImportResult(inserted, updated);
                 });
 
             var service = new ImportService(mockOptions.Object, mockValidator.Object, mockRepo.Object);
@@ -61,7 +56,7 @@ namespace TimeSeries.Tests
             var response = await service.ImportTimeSeries(input, EnergyUnit.MWh, CancellationToken.None);
 
             // Assert
-            mockRepo.Verify(r => r.UpsertLoadProfileAsync(
+            mockRepo.Verify(r => r.ImportTimeSeriesAsync(
                 It.Is<List<TimeSeriesDto>>(list => list.Count == expectedValidEntries.Count),
                 It.IsAny<CancellationToken>()),
                 Times.Once);

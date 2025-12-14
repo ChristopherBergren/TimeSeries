@@ -1,38 +1,31 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using TimeSeries.Application.Commands;
-using TimeSeries.Application.Interfaces;
-using TimeSeries.Application.Models;
-using TimeSeries.Application.Responses;
-using TimeSeries.Domain.Enums;
-using Xunit;
+using TimeSeriesRoot.Application.Commands;
+using TimeSeriesRoot.Application.Interfaces;
+using TimeSeriesRoot.Application.Models;
+using TimeSeriesRoot.Application.Responses;
+using TimeSeriesRoot.Domain.Enums;
 
-namespace TimeSeries.IntegrationTests
+namespace TimeSeriesRoot.IntegrationTests
 {
-    public class LoadProfileControllerEndToEndTests : IClassFixture<WebApplicationFactory<Program>>
+    public class TimeSeriesControllerEndToEndTests : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly WebApplicationFactory<Program> _factory;
 
-        public LoadProfileControllerEndToEndTests(WebApplicationFactory<Program> factory)
+        public TimeSeriesControllerEndToEndTests(WebApplicationFactory<Program> factory)
         {
             _factory = factory.WithWebHostBuilder(builder =>
             {
                 builder.ConfigureServices(services =>
                 {
                     // Ersätt repot med en mock 
-                    var repoDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(ILoadProfileRepository));
+                    var repoDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(ITimeSeriesRepository));
                     if (repoDescriptor != null) services.Remove(repoDescriptor);
 
-                    var mockRepo = new Mock<ILoadProfileRepository>();
-                    mockRepo.Setup(r => r.UpsertLoadProfileAsync(
+                    var mockRepo = new Mock<ITimeSeriesRepository>();
+                    mockRepo.Setup(r => r.ImportTimeSeriesAsync(
                          It.IsAny<List<TimeSeriesDto>>(),
                          It.IsAny<CancellationToken>()))
                          .ReturnsAsync((List<TimeSeriesDto> list, CancellationToken ct) =>
@@ -53,7 +46,7 @@ namespace TimeSeries.IntegrationTests
                                  updated += g.Count() - 1; // övriga = updates
                              }
 
-                             return new UpsertResult(inserted, updated);
+                             return new DbImportResult(inserted, updated);
                          });
 
 
@@ -63,19 +56,19 @@ namespace TimeSeries.IntegrationTests
         }
 
         [Theory]
-        [MemberData(nameof(GetUpsertTestData))]
+        [MemberData(nameof(GetImportTestData))]
         public async Task PostParse_ShouldReturnCorrectCounts(List<TimeSeriesDto> input, int expectedRead, int expectedInsert, int expectedUpdate, int expectedFailed)
         {
             // Arrange
             var client = _factory.CreateClient();
-            var command = new UpsertTimeSeriesCommand { TimeSeries = input, Unit = EnergyUnit.MWh };
+            var command = new ImportTimeSeriesCommand { TimeSeries = input, Unit = EnergyUnit.MWh };
 
             // Act
             var response = await client.PostAsJsonAsync("/api/timeseries/parse", command);
 
             response.EnsureSuccessStatusCode();
 
-            var result = await response.Content.ReadFromJsonAsync<UpsertTimeSeriesResponse>(
+            var result = await response.Content.ReadFromJsonAsync<ImportTimeSeriesResponse>(
                 new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             // Assert
@@ -87,7 +80,7 @@ namespace TimeSeries.IntegrationTests
         }
 
         // Test-data
-        public static IEnumerable<object[]> GetUpsertTestData()
+        public static IEnumerable<object[]> GetImportTestData()
         {
             var timestamp = DateTime.UtcNow;
 

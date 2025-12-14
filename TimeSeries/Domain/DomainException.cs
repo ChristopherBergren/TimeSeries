@@ -1,4 +1,4 @@
-﻿namespace TimeSeries.Domain
+﻿namespace TimeSeriesRoot.Domain
 {
     [Serializable]
     internal class DomainException : Exception

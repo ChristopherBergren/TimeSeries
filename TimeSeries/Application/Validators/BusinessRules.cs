@@ -1,6 +1,6 @@
-﻿using TimeSeries.Application.Models;
+﻿using TimeSeriesRoot.Application.Models;
 
-namespace TimeSeries.Application.Validators
+namespace TimeSeriesRoot.Application.Validators
 {
     public static class BusinessRules
     {
@@ -15,6 +15,24 @@ namespace TimeSeries.Application.Validators
         public static bool IsValidMba(string? mba)
         {
             return string.IsNullOrWhiteSpace(mba) || Rules.AllowedMbaValues.Contains(mba);
+        }
+
+        public static DateTime? ConvertESettCsvDateToDateTime(string csvFileDateFormat)
+        {
+            // Datumformat i csv-filer från eSett: 27.11.2025/01:45
+            // https://opendata.esett.com/load_profile
+            try
+            {
+                var dateAndTime = csvFileDateFormat.Split("/");
+                var hourMin = dateAndTime[1].Split(':');
+                var dateParts = dateAndTime[0].Split(".");
+                var dateTime = new DateTime(Convert.ToInt32(dateParts[2]), Convert.ToInt32(dateParts[1]), Convert.ToInt32(dateParts[0]), Convert.ToInt32(hourMin[0]), Convert.ToInt32(hourMin[1]), 0);
+                return dateTime;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

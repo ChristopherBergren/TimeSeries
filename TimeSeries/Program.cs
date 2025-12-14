@@ -1,22 +1,19 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Serilog;
-using Serilog.Events;
-using Serilog.Formatting.Compact;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using TimeSeries.Api.Extensions;
-using TimeSeries.Application.Behaviors;
-using TimeSeries.Application.Interfaces;
-using TimeSeries.Application.Models;
-using TimeSeries.Application.Services;
-using TimeSeries.Application.Validators;
-using TimeSeries.Infrastructure;
-using TimeSeries.Infrastructure.Repositories;
+using TimeSeriesRoot.Api.Extensions;
+using TimeSeriesRoot.Application.Behaviors;
+using TimeSeriesRoot.Application.Interfaces;
+using TimeSeriesRoot.Application.Models;
+using TimeSeriesRoot.Application.Services;
+using TimeSeriesRoot.Application.Validators;
+using TimeSeriesRoot.Infrastructure;
+using TimeSeriesRoot.Infrastructure.Repositories;
 
-namespace TimeSeries
+namespace TimeSeriesRoot
 {
     public class Program
     {
@@ -38,8 +35,9 @@ namespace TimeSeries
             var settings = builder.Configuration.GetSection("Settings").Get<Settings>();
             BusinessRules.Initialize(settings!);
 
-            builder.Services.AddScoped<ILoadProfileRepository, LoadProfileRepository>();
+            builder.Services.AddScoped<ITimeSeriesRepository, TimeSeriesRepository>();
             builder.Services.AddScoped<IImportService, ImportService>();
+            builder.Services.AddScoped<ITimeSeriesService, TimeSeriesService>();
 
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
@@ -52,7 +50,7 @@ namespace TimeSeries
 
             // Registrera validering och MediatR
             builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
-            builder.Services.AddValidatorsFromAssemblyContaining<UpsertTimeSeriesCommandValidator>();
+            builder.Services.AddValidatorsFromAssemblyContaining<ImportTimeSeriesCommandValidator>();
             builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             
             var app = builder.Build();

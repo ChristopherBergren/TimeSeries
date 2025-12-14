@@ -1,13 +1,13 @@
-﻿using TimeSeries.Application.Models;
-using TimeSeries.Application.Responses;
-using TimeSeries.Domain.Enums;
+﻿using TimeSeriesRoot.Application.Models;
+using TimeSeriesRoot.Application.Responses;
+using TimeSeriesRoot.Domain.Enums;
 
-namespace TimeSeries.Application.Interfaces
+namespace TimeSeriesRoot.Application.Interfaces
 {
     public interface IImportService
     {
-        Task<UpsertTimeSeriesResponse> ExecuteBulkImport(CancellationToken cancellationToken);
-        Task<UpsertTimeSeriesResponse> ImportTimeSeries(List<TimeSeriesDto> timeSeries, EnergyUnit unit, CancellationToken cancellationToken);
+        Task<ImportTimeSeriesResponse> BulkImportTimeSeries(CancellationToken cancellationToken);
+        Task<ImportTimeSeriesResponse> ImportTimeSeries(List<TimeSeriesDto> timeSeries, EnergyUnit unit, CancellationToken cancellationToken);
 
     }
 }

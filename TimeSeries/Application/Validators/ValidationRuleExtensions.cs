@@ -1,9 +1,6 @@
 ﻿using FluentValidation;
-using FluentValidation.Validators;
-using System;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace TimeSeries.Application.Validators
+namespace TimeSeriesRoot.Application.Validators
 {
     public static class ValidationRuleExtensions
     {

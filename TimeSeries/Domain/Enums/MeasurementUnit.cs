@@ -1,4 +1,4 @@
-﻿namespace TimeSeries.Domain.Enums
+﻿namespace TimeSeriesRoot.Domain.Enums
 {
     public enum EnergyUnit {
         MWh,

@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <StartupObject>TimeSeries.Program</StartupObject>
+    <StartupObject>TimeSeriesRoot.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,10 +34,6 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="8.105.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Logs\" />
   </ItemGroup>
 
 </Project>

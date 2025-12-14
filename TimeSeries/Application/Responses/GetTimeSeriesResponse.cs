@@ -1,8 +1,9 @@
-﻿using MediatR;
-using TimeSeries.Application.Interfaces;
-namespace TimeSeries.Application.Responses
+﻿using TimeSeriesRoot.Application.Models;
+
+namespace TimeSeriesRoot.Application.Responses
 {
-    public class GetTimeSeriesResponse : IPaginationResponse
+    public class GetTimeSeriesResponse
     {
+        public List<TimeSeriesDto> TimeSeries { get; set; } = [];
     }
 }

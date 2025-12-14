@@ -1,4 +1,4 @@
-﻿namespace TimeSeries.Application.Responses
+﻿namespace TimeSeriesRoot.Application.Responses
 {
     public class GetTimeSeriesByIdResponse
     {

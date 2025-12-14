@@ -1,13 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TimeSeries.Domain.Entities;
-namespace TimeSeries.Infrastructure
+using TimeSeriesRoot.Domain.Entities;
+namespace TimeSeriesRoot.Infrastructure
 {
     public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {
-        public DbSet<LoadProfile> LoadProfile => Set<LoadProfile>();
+        public DbSet<Domain.Entities.TimeSeries> TimeSeries => Set<TimeSeries>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<LoadProfile>()
+            modelBuilder.Entity<TimeSeries>()
                 .HasKey(lp => lp.Id);
         }
     }

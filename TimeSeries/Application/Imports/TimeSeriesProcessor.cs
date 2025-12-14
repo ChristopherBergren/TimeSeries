@@ -1,9 +1,8 @@
 ﻿using FluentValidation;
-using System.Threading;
-using TimeSeries.Application.Models;
-using TimeSeries.Domain.Enums;
+using TimeSeriesRoot.Application.Models;
+using TimeSeriesRoot.Domain.Enums;
 
-namespace TimeSeries.Application.Imports
+namespace TimeSeriesRoot.Application.Imports
 {
     public class TimeSeriesProcessor
     {
@@ -18,6 +17,9 @@ namespace TimeSeries.Application.Imports
             var validSeries = new List<TimeSeriesDto>();
             int failedCount = 0;
 
+            // Skapa ett gemensamt serie-id (som används i uppgift 2.2)
+            var seriesId = Guid.NewGuid();
+
             foreach (var entry in timeSeriesData.TimeSeries)
             {
                 // Validera fälten med TimeSeriesValidator
@@ -26,6 +28,11 @@ namespace TimeSeries.Application.Imports
                 // Konvertera energienhet om annan än den interna (kWh)
                 if (timeSeriesData.EnergyUnit == EnergyUnit.MWh)
                     entry.Quantity *= 1000;
+
+                // Nytt grupp-id läggs till alla datapunkter. Om det senare i pipelinen (databas-merge)
+                // visar sig att datapunkten är en dubblett och enbart en update skall utföras, kommer inte
+                // detta nya värde att ersätta det gamla. Enbart de domän-specifika fälten uppdateras.
+                entry.SeriesId = seriesId;
 
                 if (result.IsValid)
                     validSeries.Add(entry);

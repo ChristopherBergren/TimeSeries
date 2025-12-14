@@ -1,4 +1,4 @@
-﻿namespace TimeSeries.Application.Models
+﻿namespace TimeSeriesRoot.Application.Models
 {
     public class ImportResult(bool success, int readCount = 0, int updateCount = 0, int insertCount = 0, int failedCount = 0)
     {

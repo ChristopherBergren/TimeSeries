@@ -1,22 +1,15 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using TimeSeries.Application.Models;
-using TimeSeries.Infrastructure;
-using TimeSeries.Infrastructure.Repositories;
-using Xunit;
-using static TimeSeries.Infrastructure.Repositories.LoadProfileRepository;
+using TimeSeriesRoot.Application.Models;
+using TimeSeriesRoot.Infrastructure;
+using TimeSeriesRoot.Infrastructure.Repositories;
 
 namespace TimeSeries.Tests 
 {
-    public class LoadProfileRepositoryTests
+    public class TimeSeriesRepositoryTests
     {
         [Fact]
-        public async Task ImportLoadProfileAsync_Should_InsertAndMerge_UniqueRows()
+        public async Task ImportTimeSeriesAsync_Should_InsertAndMerge_UniqueRows()
         {
             // Arrange
 
@@ -31,7 +24,7 @@ namespace TimeSeries.Tests
             await using var context = new AppDbContext(options);
             await context.Database.EnsureCreatedAsync();
 
-            var repository = new LoadProfileRepository(context);
+            var repository = new TimeSeriesRepository(context);
 
             var timestamp = DateTime.Now;
             var input = new List<TimeSeriesDto>
@@ -42,12 +35,12 @@ namespace TimeSeries.Tests
         };
 
             // Act
-            UpsertResult upsertResult = await repository.UpsertLoadProfileAsync(input, CancellationToken.None);
+            DbImportResult dbImportResult = await repository.ImportTimeSeriesAsync(input, CancellationToken.None);
 
             // Assert
 
             // Verifiera merge av ALS-posterna
-            var dbRows = await context.LoadProfile.ToListAsync();
+            var dbRows = await context.TimeSeries.ToListAsync();
             Assert.Equal(2, dbRows.Count); // 1 ALS + 1 AMS
 
             // Verifiera att ALS-raden uppdaterades med sista Quantity-värdet

@@ -1,4 +1,4 @@
-﻿namespace TimeSeries.Application.Models
+﻿namespace TimeSeriesRoot.Application.Models
 {
     public record ImportData(bool IsValid, TimeSeriesData? TimeSeriesData);
 }

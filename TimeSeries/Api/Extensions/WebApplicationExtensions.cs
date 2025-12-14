@@ -1,14 +1,6 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Serilog;
-using Serilog.Events;
-using Serilog.Formatting.Compact;
-using Serilog.Formatting.Json;
-using Serilog.Sinks.Seq;
-
-namespace TimeSeries.Api.Extensions
+﻿namespace TimeSeriesRoot.Api.Extensions
 {
-    using Microsoft.EntityFrameworkCore;
-    using TimeSeries.Infrastructure;
+    using TimeSeriesRoot.Infrastructure;
 
     public static class WebApplicationExtensions
     {

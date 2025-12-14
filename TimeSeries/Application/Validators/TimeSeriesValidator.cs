@@ -1,8 +1,7 @@
 ﻿using FluentValidation;
-using TimeSeries.Application.Models;
-using TimeSeries.Domain.Enums;
+using TimeSeriesRoot.Application.Models;
 
-namespace TimeSeries.Application.Validators
+namespace TimeSeriesRoot.Application.Validators
 {
     public class TimeSeriesValidator : AbstractValidator<TimeSeriesDto>
     {
@@ -24,7 +23,6 @@ namespace TimeSeries.Application.Validators
             RuleFor(x => x.MgaName)
                 .NotNull()
                 .NotEmpty();
-
         }
     }
 }
