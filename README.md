@@ -27,7 +27,9 @@ Time-Series Data Processor & API
    - Endast CSV-filer
    - Endast filer exporterade från https://opendata.esett.com/load_profile
       där både MBA och MGA angetts. Detta då nyckel vid db-merge består av (Timestamp, MBA, MGA)
-
+  - Koden har kommentarer där jag anser av nytta. Men läs speciellt kommentarerna i /Infrastructure/Repositories/TimeSeriesRepository.cs samt /Domain/Entities/TimeSeries.cs
+    gällande slutsatser jag fick dra om databas-designen och upsert-förfarandet. Jag må ha dragit fel slutsatser, men det är dessa lösningen är byggda kring.
+    
 - **Parse enskild fil**
   - Energi-enhet (kWh eller MWh) måste läggas till i json-payload enligt:
    ```
