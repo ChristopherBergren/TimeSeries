@@ -16,7 +16,7 @@ namespace TimeSeries.Tests
     public class LoadProfileRepositoryTests
     {
         [Fact]
-        public async Task UpsertLoadProfileAsync_Should_InsertAndMerge_UniqueRows()
+        public async Task ImportLoadProfileAsync_Should_InsertAndMerge_UniqueRows()
         {
             // Arrange
 

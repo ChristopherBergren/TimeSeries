@@ -1,6 +1,6 @@
 ﻿namespace TimeSeries.Domain.Enums
 {
-    public enum MeasurementUnit {
+    public enum EnergyUnit {
         MWh,
         kWh
     }

@@ -7,7 +7,14 @@ namespace TimeSeries.Application.Commands
 {
     public record UpsertTimeSeriesCommand : IRequest<UpsertTimeSeriesResponse>
     {
-        public MeasurementUnit Unit { get; set; }
+        /// <summary>
+        /// Measurement unit
+        /// Valid values: MWh, kWh (case-insensitive)
+        /// </summary>
+        public EnergyUnit Unit { get; set; }
+        /// <summary>
+        /// List of TimeSeriesDto
+        /// </summary>
         public List<TimeSeriesDto>? TimeSeries { get; set; }
     }
 }

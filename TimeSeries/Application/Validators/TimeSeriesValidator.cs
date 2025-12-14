@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using TimeSeries.Api.Extensions;
 using TimeSeries.Application.Models;
 using TimeSeries.Domain.Enums;
 

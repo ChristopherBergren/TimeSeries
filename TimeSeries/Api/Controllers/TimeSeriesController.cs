@@ -1,25 +1,55 @@
 using MediatR;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
-using TimeSeries.Application.Queries;
-using TimeSeries.Application.Commands;
-using TimeSeries.Application.Responses;
 using System.ComponentModel.DataAnnotations;
+using TimeSeries.Application.Commands;
+using TimeSeries.Application.Queries;
+using TimeSeries.Application.Responses;
 
 namespace TimeSeries.Api.Controllers
 {
     [ApiController]
     [Route("api/timeseries")]
-    public class TimeSeriesController(IMediator mediator,
-    IConfiguration configuration) : ControllerBase
+    public class TimeSeriesController : ControllerBase
     {
-        private readonly IConfiguration _configuration = configuration;
-        private readonly IMediator _mediator = mediator;
+        private readonly IMediator _mediator;
+        public TimeSeriesController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
 
+        /// <summary>
+        /// Import Time Series
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
         [HttpPost("parse")]
         [ProducesResponseType(typeof(UpsertTimeSeriesResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetTimeSeries(UpsertTimeSeriesCommand command)
+        public async Task<IActionResult> ImportTimeSeries(UpsertTimeSeriesCommand command)
+        {
+            try
+            {
+                UpsertTimeSeriesResponse result = await _mediator.Send(command, HttpContext.RequestAborted);
+                return Ok(result);
+            }
+            catch (FluentValidation.ValidationException ex)
+            {
+                Log.Error(ex, $"Validation failed in GetTimeSeries: {ex.Message}\n{ex.StackTrace}");
+                return BadRequest();
+            }
+        }
+
+        /// <summary>
+        /// Bulk Import Time Series-files
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        [HttpPost("collect")]
+        [ProducesResponseType(typeof(UpsertTimeSeriesResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> BulkImportTimeSeries(UpsertTimeSeriesCommand command)
         {
             try
             {
@@ -49,26 +79,5 @@ namespace TimeSeries.Api.Controllers
                 return BadRequest();
             }
         }
-
-
-        //[HttpPost("parse")]
-        //public async Task<IActionResult> UploadCsv(IFormFile file)
-        //{
-        //    if (file == null || file.Length == 0)
-        //        return BadRequest("No file uploaded.");
-
-        //    using var stream = file.OpenReadStream();
-        //    using var reader = new StreamReader(stream);
-
-        //    // Read the first line (headers)
-        //    var headerLine = await reader.ReadLineAsync();
-        //    if (string.IsNullOrWhiteSpace(headerLine))
-        //        return BadRequest("CSV file is empty or has no header.");
-
-        //    // Split headers by comma (you may need more complex parsing for quoted commas)
-        //    var headers = headerLine.Split(',').Select(h => h.Trim()).ToArray();
-
-        //    return Ok(headers);
-        //}
     }
 }

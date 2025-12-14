@@ -14,7 +14,7 @@ namespace TimeSeries.Application.Validators
                 .NotEmpty();
             RuleFor(x => x.Unit)
                 .NotNull()
-                .Must(unit => Enum.IsDefined(typeof(MeasurementUnit), unit));
+                .Must(unit => Enum.IsDefined(typeof(EnergyUnit), unit));
         }
     }
 }

@@ -1,10 +1,15 @@
-﻿namespace TimeSeries.Application.Responses
+﻿using TimeSeries.Application.Models;
+
+namespace TimeSeries.Application.Responses
 {
-    public class UpsertTimeSeriesResponse
+    public class UpsertTimeSeriesResponse(int readCount, int updateCount, int insertCount, int failedCount)
     {
-        public int ReadCount { get; set; }
-        public int UpdateCount { get; set; }
-        public int InsertCount { get; set; }
-        public int FailedCount { get; set; }
+        public UpsertTimeSeriesResponse(ImportResult importResult) 
+            : this (importResult.ReadCount, importResult.UpdateCount, importResult.InsertCount, importResult.FailedCount) { }
+
+        public int ReadCount { get; set; } = readCount;
+        public int UpdateCount { get; set; } = updateCount;
+        public int InsertCount { get; set; } = insertCount;
+        public int FailedCount { get; set; } = failedCount;
     }
 }

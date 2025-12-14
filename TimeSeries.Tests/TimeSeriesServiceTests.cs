@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Options;
 using Moq;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +27,7 @@ namespace TimeSeries.Tests
             // Arrange
             var mockValidator = new Mock<IValidator<TimeSeriesDto>>();
             var mockRepo = new Mock<ILoadProfileRepository>();
+            var mockOptions = new Mock<IOptions<Settings>>();
 
             // Mock validator: markera enbart expectedValidEntries som giltiga
             mockValidator.Setup(v => v.ValidateAsync(It.IsAny<TimeSeriesDto>(), It.IsAny<CancellationToken>()))
@@ -54,9 +56,9 @@ namespace TimeSeries.Tests
                     return new UpsertResult(inserted, updated);
                 });
 
-            var service = new LoadProfileService(mockValidator.Object, mockRepo.Object);
+            var service = new ImportService(mockOptions.Object, mockValidator.Object, mockRepo.Object);
             // Act
-            var response = await service.UpsertTimeSeries(input, MeasurementUnit.MWh, CancellationToken.None);
+            var response = await service.ImportTimeSeries(input, EnergyUnit.MWh, CancellationToken.None);
 
             // Assert
             mockRepo.Verify(r => r.UpsertLoadProfileAsync(

@@ -68,7 +68,7 @@ namespace TimeSeries.IntegrationTests
         {
             // Arrange
             var client = _factory.CreateClient();
-            var command = new UpsertTimeSeriesCommand { TimeSeries = input, Unit = MeasurementUnit.MWh };
+            var command = new UpsertTimeSeriesCommand { TimeSeries = input, Unit = EnergyUnit.MWh };
 
             // Act
             var response = await client.PostAsJsonAsync("/api/timeseries/parse", command);

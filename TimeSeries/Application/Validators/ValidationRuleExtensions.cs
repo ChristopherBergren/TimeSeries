@@ -1,10 +1,9 @@
 ﻿using FluentValidation;
 using FluentValidation.Validators;
 using System;
-using TimeSeries.Domain.Services;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace TimeSeries.Api.Extensions
+namespace TimeSeries.Application.Validators
 {
     public static class ValidationRuleExtensions
     {
@@ -39,7 +38,7 @@ namespace TimeSeries.Api.Extensions
           this IRuleBuilder<T, string?> ruleBuilder)
         {
             return ruleBuilder
-                .Must(mba => LoadProfileRules.IsValidMba(mba))
+                .Must(mba => BusinessRules.IsValidMba(mba))
                 .WithMessage("{PropertyName} has an invalid value.");
         }
     }

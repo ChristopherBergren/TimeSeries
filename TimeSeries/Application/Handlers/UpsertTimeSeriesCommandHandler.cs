@@ -7,12 +7,12 @@ using TimeSeries.Application.Responses;
 
 namespace TimeSeries.Application.Handlers
 {
-    internal class UpsertTimeSeriesCommandHandler(ILoadProfileService profileService)
+    internal class UpsertTimeSeriesCommandHandler(IImportService profileService)
                 : IRequestHandler<UpsertTimeSeriesCommand, UpsertTimeSeriesResponse>
     {
         public async Task<UpsertTimeSeriesResponse> Handle(UpsertTimeSeriesCommand command, CancellationToken cancellationToken)
         {
-            var response = await profileService.UpsertTimeSeries(command.TimeSeries!, command.Unit, cancellationToken);
+            var response = await profileService.ImportTimeSeries(command.TimeSeries!, command.Unit, cancellationToken);
 
             return response;
         }
