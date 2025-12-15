@@ -25,7 +25,7 @@ namespace TimeSeriesRoot
             // Använd SeriLog (extension-metod)
             builder.UseCustomSerilog();
 
-            // Jag valde Sqlite som db
+            // Sqlite
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlite("Data Source=app.db"));
 

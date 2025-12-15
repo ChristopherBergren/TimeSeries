@@ -32,11 +32,12 @@ namespace TimeSeriesRoot.Application.Services
 
         public async Task<ImportTimeSeriesResponse> ImportTimeSeries(List<TimeSeriesDto> timeSeries, EnergyUnit unit, CancellationToken cancellationToken)
         {
-            var processor = new TimeSeriesProcessor(_validator);
+            var processor = new TimeSeriesProcessor(_validator, _repository);
             var timeSeriesData = new TimeSeriesData(unit, timeSeries);
 
-            // Validera tidsseriedata och konvertera till rätt enhet
-            var result = await processor.Process(timeSeriesData, cancellationToken);
+            // Validera tidsseriedata, konvertera till rätt enhet och lägg till serie-id
+            var seriesId = await _repository.GetNextSeriesIdsAsync(1);
+            var result = await processor.Process(timeSeriesData, seriesId, cancellationToken);
             // In i datalagret
             var dbImportResult = await _repository.ImportTimeSeriesAsync(result.ValidTimeSeries, cancellationToken);
 

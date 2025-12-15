@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using TimeSeriesRoot.Application.Interfaces;
 using TimeSeriesRoot.Application.Models;
 using TimeSeriesRoot.Domain.Enums;
 
@@ -7,18 +8,17 @@ namespace TimeSeriesRoot.Application.Imports
     public class TimeSeriesProcessor
     {
         private readonly IValidator<TimeSeriesDto> _validator;
-        public TimeSeriesProcessor(IValidator<TimeSeriesDto> validator)
+        private readonly ITimeSeriesRepository _repository;
+        public TimeSeriesProcessor(IValidator<TimeSeriesDto> validator, ITimeSeriesRepository repository)
         {
             _validator = validator;
+            _repository = repository;
         }
 
-        public async Task<ProcessedTimeSeriesResult> Process(TimeSeriesData timeSeriesData, CancellationToken cancellationToken)
+        public async Task<ProcessedTimeSeriesResult> Process(TimeSeriesData timeSeriesData, int seriesId, CancellationToken cancellationToken)
         {
             var validSeries = new List<TimeSeriesDto>();
             int failedCount = 0;
-
-            // Skapa ett gemensamt serie-id (som används i uppgift 2.2)
-            var seriesId = Guid.NewGuid();
 
             foreach (var entry in timeSeriesData.TimeSeries)
             {
@@ -29,7 +29,7 @@ namespace TimeSeriesRoot.Application.Imports
                 if (timeSeriesData.EnergyUnit == EnergyUnit.MWh)
                     entry.Quantity *= 1000;
 
-                // Nytt grupp-id läggs till alla datapunkter. Om det senare i pipelinen (databas-merge)
+                // Nytt serie-id läggs till alla datapunkter. Om det senare i pipelinen (databas-merge)
                 // visar sig att datapunkten är en dubblett och enbart en update skall utföras, kommer inte
                 // detta nya värde att ersätta det gamla. Enbart de domän-specifika fälten uppdateras.
                 entry.SeriesId = seriesId;

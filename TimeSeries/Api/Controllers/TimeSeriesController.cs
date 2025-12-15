@@ -2,10 +2,12 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using System.ComponentModel.DataAnnotations;
+using System.Net.NetworkInformation;
 using TimeSeriesRoot.Application.Commands;
 using TimeSeriesRoot.Application.Queries;
 using TimeSeriesRoot.Application.Responses;
 using TimeSeriesRoot.Domain.Enums;
+using Xunit.Sdk;
 
 namespace TimeSeriesRoot.Api.Controllers
 {
@@ -34,7 +36,7 @@ namespace TimeSeriesRoot.Api.Controllers
                 ImportTimeSeriesResponse result = await _mediator.Send(command, HttpContext.RequestAborted);
                 return Ok(result);
             }
-            catch (FluentValidation.ValidationException ex)
+            catch (Exception ex)
             {
                 Log.Error(ex, $"Validation failed in ImportTimeSeries: {ex.Message}\n{ex.StackTrace}");
                 return BadRequest();
@@ -56,7 +58,7 @@ namespace TimeSeriesRoot.Api.Controllers
                 ImportTimeSeriesResponse result = await _mediator.Send(new BulkImportTimeSeriesCommand(), HttpContext.RequestAborted);
                 return Ok(result);
             }
-            catch (FluentValidation.ValidationException ex)
+            catch (Exception ex)
             {
                 Log.Error(ex, $"Validation failed in BulkImportTimeSeries: {ex.Message}\n{ex.StackTrace}");
                 return BadRequest();
@@ -74,7 +76,7 @@ namespace TimeSeriesRoot.Api.Controllers
                 GetTimeSeriesResponse result = await _mediator.Send(query, HttpContext.RequestAborted);
                 return Ok(result);
             }
-            catch (ValidationException ex)
+            catch (Exception ex)
             {
                 Log.Error(ex, $"Validation failed in GetTimeSeries: {ex.Message}\n{ex.StackTrace}");
                 return BadRequest();
@@ -84,17 +86,39 @@ namespace TimeSeriesRoot.Api.Controllers
         [HttpGet("{id}/data")]
         [ProducesResponseType(typeof(GetTimeSeriesByIdResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetTimeSeriesById(Guid id, string unit, int start, int end)
+        public async Task<IActionResult> GetTimeSeriesById(int id, string unit, string start, string end)
         {
             try
             {
-                var query = new GetTimeSeriesByIdQuery { Id = id, Start = start, End = end  };
+                if (!Enum.TryParse<EnergyUnit>(unit, ignoreCase: true, out var parsedUnit))
+                {
+                    throw new ValidationException($"Invalid status '{unit}'. Allowed values: {string.Join(", ", Enum.GetNames<EnergyUnit>())}");
+                }
+
+                var query = new GetTimeSeriesByIdQuery { Id = id, Unit = parsedUnit,  Start = start, End = end };
                 GetTimeSeriesByIdResponse result = await _mediator.Send(query, HttpContext.RequestAborted);
                 return Ok(result);
             }
-            catch (ValidationException ex)
+            catch (Exception ex)
             {
                 Log.Error(ex, $"Validation failed in GetTimeSeriesById: {ex.Message}\n{ex.StackTrace}");
+                return BadRequest();
+            }
+        }
+        [HttpGet("{id}/kpi")]
+        [ProducesResponseType(typeof(GetTimeSeriesKpiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetTimeSeriesKpi(int id, string periodStart, string periodEnd)
+        {
+            try
+            {
+                var query = new GetTimeSeriesKpiQuery { Id = id, PeriodStart = periodStart, PeriodEnd = periodEnd };
+                GetTimeSeriesKpiResponse result = await _mediator.Send(query, HttpContext.RequestAborted);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"Validation failed in GetTimeSeriesKpi: {ex.Message}\n{ex.StackTrace}");
                 return BadRequest();
             }
         }

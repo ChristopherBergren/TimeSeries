@@ -1,6 +1,6 @@
 ﻿using TimeSeriesRoot.Application.Imports;
 
-namespace TimeSeries.Tests
+namespace TimeSeriesRoot.Tests
 {
     public class CsvTests
     {

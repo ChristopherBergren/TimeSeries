@@ -1,4 +1,11 @@
-﻿using TimeSeriesRoot.Application.Interfaces;
+﻿using Microsoft.AspNetCore.Components.Web;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
+using System;
+using System.ComponentModel;
+using System.Configuration;
+using System.Diagnostics.Metrics;
+using TimeSeriesRoot.Application.Interfaces;
 using TimeSeriesRoot.Application.Models;
 using TimeSeriesRoot.Domain.Entities;
 
@@ -48,8 +55,7 @@ namespace TimeSeriesRoot.Infrastructure.Repositories
 
             return new DbImportResult(resultInfo.RowsAffectedInserted, resultInfo.RowsAffectedUpdated );
         }
-
-        public async Task<List<TimeSeriesDto>> GetTimeSeries(int page, int pagesize)
+        public async Task<List<TimeSeriesDto>> GetTimeSeriesAsync(int page, int pagesize)
         {
             var totalCount = _context.TimeSeries.Count();
             var startIndex = --page * pagesize;
@@ -57,12 +63,44 @@ namespace TimeSeriesRoot.Infrastructure.Repositories
             {
                 var count = Math.Min(totalCount - startIndex, pagesize);
                 // Valde att sortera i fallande datum-ordning. Utan retention börjar sida 1 med väldigt gammal data.
-                var series = _context.TimeSeries.OrderByDescending(s => s.Timestamp).Skip(startIndex).Take(count);
-                var timeSeriesDto = series.Select(s => new TimeSeriesDto { Mba = s.Mba, MgaCode = s.MgaCode, MgaName = s.MgaName, Quantity = Math.Round(s.Quantity,6), Timestamp = s.Timestamp, TimestampUTC = s.TimestampUTC, SeriesId = s.SeriesId }).ToList();
+                var series = _context.TimeSeries
+                    .OrderByDescending(s => s.Timestamp)
+                    .Skip(startIndex)
+                    .Take(count);
+                var timeSeriesDto = series.Select(s => new TimeSeriesDto(s)).ToList();
 
                 return timeSeriesDto;
             }
             return [];
+        }
+        public async Task<List<TimeSeriesDto>> GetTimeSeriesByIdAsync(int seriesId)
+        {
+            return _context.TimeSeries
+                .OrderBy(s => s.Timestamp)
+                .Where(s => s.SeriesId == seriesId)
+                .Select(s => new TimeSeriesDto(s)).ToList();
+        }
+        public async Task<List<TimeSeriesDto>> GetTimeSeriesInPeriodAsync(int seriesId, DateTime from, DateTime to)
+        {
+            return _context.TimeSeries
+                .Where(s => s.SeriesId == seriesId && s.Timestamp >= from && s.Timestamp <= to)
+                .Select(s => new TimeSeriesDto(s)).ToList();
+        }
+        public async Task<int> GetNextSeriesIdsAsync(int noOfIds)
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            await _context.SeriesIdCounter.Where(c => c.Id == 1)
+                .ExecuteUpdateAsync(s => s.SetProperty(c => c.LatestSeriesId, c => c.LatestSeriesId + noOfIds));
+            await _context.SaveChangesAsync();
+            var lastSeriesId = await _context.SeriesIdCounter
+                .Where(c => c.Id == 1)
+                .Select(c => c.LatestSeriesId)
+                .SingleAsync();
+            
+            await transaction.CommitAsync();
+
+            return lastSeriesId;
         }
     }
 }

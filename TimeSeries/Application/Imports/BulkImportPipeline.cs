@@ -11,7 +11,7 @@ namespace TimeSeriesRoot.Application.Imports
         private static readonly SemaphoreSlim _entryLock = new(1, 1);
         private readonly IValidator<TimeSeriesDto> _validator;
         private readonly ITimeSeriesRepository _repository;
-
+        private record SeriesRecord(int SeriesId, string Path);
         public BulkImportPipeline(IValidator<TimeSeriesDto> validator, ITimeSeriesRepository repository)
         {
             _repository = repository;
@@ -39,28 +39,32 @@ namespace TimeSeriesRoot.Application.Imports
         {
             var results = new ConcurrentBag<ProcessedTimeSeriesResult>();
             var csvImportReader = new CsvImportReader();
-            var processor = new TimeSeriesProcessor(_validator);
+            var processor = new TimeSeriesProcessor(_validator, _repository);
 
             // Steg 1: Kontrollera om det finns filer att importera
             (bool hasFiles, string[]? files) = GetFilePaths(path);
             if (!hasFiles)
                 return new ImportResult(false);
 
-            // Steg 2: Läs in filerna och konvertera till internt format
+            // Steg 2: Generera unika serieId:n och skicka med till nästa steg
+            var seriesId = await _repository.GetNextSeriesIdsAsync(files!.Count()) - files!.Count() + 1;
+            var seriesRecords = files!.Select(f => new SeriesRecord(seriesId++, f));
+
+            // Steg 3: Läs in filerna och konvertera till internt format
             await Parallel.ForEachAsync(
-                files!,
+                seriesRecords!,
                 new ParallelOptions
                 {
                     MaxDegreeOfParallelism = Environment.ProcessorCount
                 },
-                async (path, ct) =>
+                async (seriesRecord, ct) =>
                 {
                     ImportData importData = new ImportData(false,null);
 
-                    switch (Path.GetExtension(path).ToLower())
+                    switch (Path.GetExtension(seriesRecord.Path).ToLower())
                     {
                         case ".csv":
-                            importData = await csvImportReader.ImportTimeSeries(path, ct);
+                            importData = await csvImportReader.ImportTimeSeries(seriesRecord.Path, ct);
                             break;
                         case ".json":
                             // importData = jsonImportReader.GetTimeSeries(path, ct));
@@ -72,14 +76,14 @@ namespace TimeSeriesRoot.Application.Imports
                     if (importData.IsValid)
                     {
                         // Validera tidsseriedata och konvertera till rätt enhet
-                        var result = await processor.Process(importData.TimeSeriesData!, cancellationToken);
+                        var result = await processor.Process(importData.TimeSeriesData!, seriesRecord.SeriesId, cancellationToken);
 
                         // Lägg till importen till ConcurrentBag
                         results.Add(result);
                     }
                 });
 
-            // Steg 3: Merga resultaten och sänd till repository
+            // Steg 4: Merga resultaten och sänd till repository
             var validTimeSeries = results.SelectMany(r => r.ValidTimeSeries).ToList();
             var failedCount = results.Sum(r => r.FailedCount);
             var dbImportResult = await _repository.ImportTimeSeriesAsync(validTimeSeries, cancellationToken);

@@ -4,7 +4,7 @@ using TimeSeriesRoot.Application.Models;
 using TimeSeriesRoot.Infrastructure;
 using TimeSeriesRoot.Infrastructure.Repositories;
 
-namespace TimeSeries.Tests 
+namespace TimeSeriesRoot.Tests 
 {
     public class TimeSeriesRepositoryTests
     {

@@ -12,14 +12,13 @@
             db.Database.EnsureCreated();
 
             // Seed data 
-            //if (!db.TodoItems.Any())
-            //{
-            //    db.TodoItems.AddRange(
-            //        new TodoItem { Name = "Buy milk", IsDone = false },
-            //        new TodoItem { Name = "Walk the dog", IsDone = true }
-            //    );
-            //    db.SaveChanges();
-            //}
+
+            // Räknare för att sätta SeriesId i TimeSeries vid importer. Endast en post
+            if (!db.SeriesIdCounter.Any())
+            {
+                db.SeriesIdCounter.Add(new Domain.Entities.SeriesIdCounter { LatestSeriesId = 0 });
+                db.SaveChanges();
+            }
 
             return app;
         }
