@@ -14,7 +14,7 @@ Time-Series Data Processor & API
 
 - **Validering**
 
-  FluentValidation används dels för grundläggande validering av request-databärare samt för validering av poster i listor i LoadProfileService
+  FluentValidation används dels för grundläggande validering av indata samt för validering av data vid importer
 
 - **Loggning**
 
