@@ -7,7 +7,7 @@ Time-Series Data Processor & API
   Vad principerna är i Clean/Onion känner ni säkert till så lämnar diskussion kring detta till mötet där jag belyser hur jag följt detta. Även CQRS följer jag så strikt jag kan.
   Nedan några korta tekniska punkter och längre ned lite kommentarer/instruktioner för när ni testar.
 
-  Mappstrukturen i detta projekt är lager-orienterad, men i ett verkligt scenario hade jag valt en Feature-baserad struktur
+  Arkitekturen i detta projekt är Clean med teknik-orienterad mappstruktur, men i ett verkligt scenario hade jag valt Vertical-slice med Feature-baserad struktur då det helt grundar sig i Use-cases men med Clean-arkitektur bibehållen inom varje feature. 
 
 - **Datalager**
 
