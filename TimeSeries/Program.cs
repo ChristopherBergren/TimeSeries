@@ -4,14 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using TimeSeriesRoot.Application.Common.Behaviors;
 using TimeSeriesRoot.Api.Extensions;
-using TimeSeriesRoot.Application.Behaviors;
-using TimeSeriesRoot.Application.Interfaces;
-using TimeSeriesRoot.Application.Models;
-using TimeSeriesRoot.Application.Services;
-using TimeSeriesRoot.Application.Validators;
 using TimeSeriesRoot.Infrastructure;
-using TimeSeriesRoot.Infrastructure.Repositories;
+using TimeSeriesRoot.Application.TimeSeries.Models;
+using TimeSeriesRoot.Application.TimeSeries.Interfaces;
+using TimeSeriesRoot.Application.TimeSeries.Services;
+using TimeSeriesRoot.Infrastructure.TimeSeries;
+using TimeSeriesRoot.Application.TimeSeries.Validators;
+using TimeSeriesRoot.Application.TimeSeries.BusinessRules;
 
 namespace TimeSeriesRoot
 {
@@ -33,7 +34,7 @@ namespace TimeSeriesRoot
 
             // Initialize business-rules
             var settings = builder.Configuration.GetSection("Settings").Get<Settings>();
-            BusinessRules.Initialize(settings!);
+            TimeSeriesBusinessRules.Initialize(settings!);
 
             builder.Services.AddScoped<ITimeSeriesRepository, TimeSeriesRepository>();
             builder.Services.AddScoped<IImportService, ImportService>();
@@ -46,7 +47,10 @@ namespace TimeSeriesRoot
                     options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
                 });
 
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+               c.EnableAnnotations();
+            });
 
             // Registrera validering och MediatR
             builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());

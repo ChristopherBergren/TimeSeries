@@ -2,12 +2,12 @@
 using FluentValidation.Results;
 using Microsoft.Extensions.Options;
 using Moq;
-using TimeSeriesRoot.Application.Interfaces;
-using TimeSeriesRoot.Application.Models;
-using TimeSeriesRoot.Application.Services;
+using TimeSeriesRoot.Application.TimeSeries.Interfaces;
+using TimeSeriesRoot.Application.TimeSeries.Models;
+using TimeSeriesRoot.Application.TimeSeries.Services;
 using TimeSeriesRoot.Domain.Enums;
 
-namespace TimeSeries.Tests
+namespace TimeSeriesRoot.Tests
 {
     public class TimeSeriesServiceTests
     {
@@ -74,10 +74,10 @@ namespace TimeSeries.Tests
             // Scenario 1: 3 giltiga, 1 ogiltig, en dubblett → 2 insert, 1 update
             var input1 = new List<TimeSeriesDto>
             {
-                new() { Mba = "SE1", MgaCode = "ALS", Quantity = -2.345, Timestamp = timestamp },
-                new() { Mba = "SE1", MgaCode = "ALS", Quantity = -3.345, Timestamp = timestamp }, // dubblett
-                new() { Mba = "SE1", MgaCode = "AMS", Quantity = -2.345, Timestamp = timestamp },
-                new() { Mba = "SE99", MgaCode = "AMS", Quantity = -2.345, Timestamp = timestamp } // ogiltig
+                new() { Mba = "SE1", MgaCode = "ALS", Quantity = "-2.345", Timestamp = timestamp },
+                new() { Mba = "SE1", MgaCode = "ALS", Quantity = "-3.345", Timestamp = timestamp }, // dubblett
+                new() { Mba = "SE1", MgaCode = "AMS", Quantity = "-2.345", Timestamp = timestamp },
+                new() { Mba = "SE99", MgaCode = "AMS", Quantity = "-2.345", Timestamp = timestamp } // ogiltig
             };
             var expected1 = new List<TimeSeriesDto>
             {
@@ -88,8 +88,8 @@ namespace TimeSeries.Tests
             // Scenario 2: alla giltiga, inga dubbletter → 2 insert, 0 update
             var input2 = new List<TimeSeriesDto>
             {
-                new() { Mba = "SE1", MgaCode = "ALS", Quantity = -1.0, Timestamp = timestamp },
-                new() { Mba = "SE2", MgaCode = "AMS", Quantity = -2.0, Timestamp = timestamp }
+                new() { Mba = "SE1", MgaCode = "ALS", Quantity = "-1.0", Timestamp = timestamp },
+                new() { Mba = "SE2", MgaCode = "AMS", Quantity = "-2.0", Timestamp = timestamp }
             };
             var expected2 = new List<TimeSeriesDto>(input2);
             yield return new object[] { input2, expected2, 2, 0 };
@@ -97,11 +97,20 @@ namespace TimeSeries.Tests
             // Scenario 3: alla ogiltiga → 0 insert, 0 update
             var input3 = new List<TimeSeriesDto>
             {
-                new() { Mba = "SE99", MgaCode = "ALS", Quantity = 1.0, Timestamp = timestamp },
-                new() { Mba = "SE100", MgaCode = "AMS", Quantity = 2.0, Timestamp = timestamp }
+                new() { Mba = "SE1", MgaCode = "ALS", Quantity = "1.0", Timestamp = timestamp },
+                new() { Mba = "SE2", MgaCode = "AMS", Quantity = "2.0", Timestamp = timestamp }
             };
             var expected3 = new List<TimeSeriesDto>(); // inga giltiga rader
             yield return new object[] { input3, expected3, 0, 0 };
+
+            // Scenario 4: alla ogiltiga → 0 insert, 0 update
+            var input4 = new List<TimeSeriesDto>
+            {
+                new() { Mba = "SE99", MgaCode = "ALS", Quantity = "-1.0", Timestamp = timestamp },
+                new() { Mba = "SE100", MgaCode = "AMS", Quantity = "-2.0", Timestamp = timestamp }
+            };
+            var expected4 = new List<TimeSeriesDto>(); // inga giltiga rader
+            yield return new object[] { input4, expected4, 0, 0 };
         }
     }
 }

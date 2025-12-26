@@ -2,10 +2,10 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using System.Net.Http.Json;
-using TimeSeriesRoot.Application.Commands;
-using TimeSeriesRoot.Application.Interfaces;
-using TimeSeriesRoot.Application.Models;
-using TimeSeriesRoot.Application.Responses;
+using TimeSeriesRoot.Application.TimeSeries.Commands;
+using TimeSeriesRoot.Application.TimeSeries.Interfaces;
+using TimeSeriesRoot.Application.TimeSeries.Models;
+using TimeSeriesRoot.Application.TimeSeries.Responses;
 using TimeSeriesRoot.Domain.Enums;
 
 namespace TimeSeriesRoot.IntegrationTests
@@ -87,26 +87,26 @@ namespace TimeSeriesRoot.IntegrationTests
             // Scenario 1: 3 giltiga, 1 ogiltig (Quantity > 0)
             var input1 = new List<TimeSeriesDto>
         {
-            new() { Mba = "SE1", MgaCode = "ALS", MgaName = "Alingsås", Quantity = -2.0, Timestamp = timestamp, TimestampUTC = timestamp },
-            new() { Mba = "SE1", MgaCode = "ALS", MgaName = "Alingsås", Quantity = -3.0, Timestamp = timestamp, TimestampUTC = timestamp }, // duplicate
-            new() { Mba = "SE1", MgaCode = "AMS", MgaName = "Almnäs", Quantity = -2.5, Timestamp = timestamp, TimestampUTC = timestamp },
-            new() { Mba = "SE99", MgaCode = "AMS", MgaName = "Almnäs", Quantity = 2.0, Timestamp = timestamp, TimestampUTC = timestamp } // invalid
+            new() { Mba = "SE1", MgaCode = "ALS", MgaName = "Alingsås", Quantity = "-2.0", Timestamp = timestamp, TimestampUTC = timestamp },
+            new() { Mba = "SE1", MgaCode = "ALS", MgaName = "Alingsås", Quantity = "-3.0", Timestamp = timestamp, TimestampUTC = timestamp }, // duplicate
+            new() { Mba = "SE1", MgaCode = "AMS", MgaName = "Almnäs", Quantity = "-2.5", Timestamp = timestamp, TimestampUTC = timestamp },
+            new() { Mba = "SE99", MgaCode = "AMS", MgaName = "Almnäs", Quantity = "2.0", Timestamp = timestamp, TimestampUTC = timestamp } // invalid
         };
             yield return new object[] { input1, 4, 2, 1, 1 };
 
             // Scenario 2: alla giltiga
             var input2 = new List<TimeSeriesDto>
         {
-            new() { Mba = "SE1", MgaCode = "ALS", MgaName = "Alingsås", Quantity = -1.0, Timestamp = timestamp, TimestampUTC = timestamp },
-            new() { Mba = "SE2", MgaCode = "AMS", MgaName = "Almnäs", Quantity = -2.0, Timestamp = timestamp, TimestampUTC = timestamp }
+            new() { Mba = "SE1", MgaCode = "ALS", MgaName = "Alingsås", Quantity = "-1.0", Timestamp = timestamp, TimestampUTC = timestamp },
+            new() { Mba = "SE2", MgaCode = "AMS", MgaName = "Almnäs", Quantity = "-2.0", Timestamp = timestamp, TimestampUTC = timestamp }
         };
             yield return new object[] { input2, 2, 2, 0, 0 };
 
             // Scenario 3: alla ogiltiga (nulls eller Quantity >= 0)
             var input3 = new List<TimeSeriesDto>
         {
-            new() { Mba = null, MgaCode = "", MgaName = "", Quantity = 1.0, Timestamp = null, TimestampUTC = null },
-            new() { Mba = "SE100", MgaCode = "XXX", MgaName = "", Quantity = 0, Timestamp = timestamp, TimestampUTC = timestamp }
+            new() { Mba = null, MgaCode = "", MgaName = "", Quantity = "1.0", Timestamp = null, TimestampUTC = null },
+            new() { Mba = "SE100", MgaCode = "XXX", MgaName = "", Quantity = "0", Timestamp = timestamp, TimestampUTC = timestamp }
         };
             yield return new object[] { input3, 2, 0, 0, 2 };
         }

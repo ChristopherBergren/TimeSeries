@@ -1,8 +1,8 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using TimeSeriesRoot.Application.Models;
+using TimeSeriesRoot.Application.TimeSeries.Models;
 using TimeSeriesRoot.Infrastructure;
-using TimeSeriesRoot.Infrastructure.Repositories;
+using TimeSeriesRoot.Infrastructure.TimeSeries;
 
 namespace TimeSeriesRoot.Tests 
 {
@@ -29,9 +29,9 @@ namespace TimeSeriesRoot.Tests
             var timestamp = DateTime.Now;
             var input = new List<TimeSeriesDto>
         {
-            new() { Mba = "SE1", Timestamp = timestamp, TimestampUTC = timestamp.ToUniversalTime(), Quantity = 1.1, MgaCode = "ALS", MgaName = "Alingsås" },
-            new() { Mba = "SE1", Timestamp = timestamp, TimestampUTC = timestamp.ToUniversalTime(), Quantity = 2.2, MgaCode = "ALS", MgaName = "Alingsås" }, // dubblett
-            new() { Mba = "SE1", Timestamp = timestamp, TimestampUTC = timestamp.ToUniversalTime(), Quantity = 3.3, MgaCode = "AMS", MgaName = "Almnäs" } // unik
+            new() { Mba = "SE1", Timestamp = timestamp, TimestampUTC = timestamp.ToUniversalTime(), Quantity = "1.1", MgaCode = "ALS", MgaName = "Alingsås" },
+            new() { Mba = "SE1", Timestamp = timestamp, TimestampUTC = timestamp.ToUniversalTime(), Quantity = "2.2", MgaCode = "ALS", MgaName = "Alingsås" }, // dubblett
+            new() { Mba = "SE1", Timestamp = timestamp, TimestampUTC = timestamp.ToUniversalTime(), Quantity = "3.3", MgaCode = "AMS", MgaName = "Almnäs" } // unik
         };
 
             // Act
