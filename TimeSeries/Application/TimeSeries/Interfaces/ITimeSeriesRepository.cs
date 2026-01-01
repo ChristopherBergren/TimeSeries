@@ -8,6 +8,6 @@ namespace TimeSeriesRoot.Application.TimeSeries.Interfaces
         Task<List<TimeSeriesDto>> GetTimeSeriesAsync(int page, int pagesize);
         Task<List<TimeSeriesDto>> GetTimeSeriesByIdAsync(int seriesId);
         Task<List<TimeSeriesDto>> GetTimeSeriesInPeriodAsync(int seriesId, DateTime from, DateTime to);
-        Task<int> GetNextSeriesIdsAsync(int noOfIds);
+        Task<int> GetNextSeriesIdsAsync();
     }
 }

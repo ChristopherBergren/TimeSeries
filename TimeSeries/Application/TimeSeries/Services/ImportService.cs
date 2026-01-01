@@ -36,7 +36,7 @@ namespace TimeSeriesRoot.Application.TimeSeries.Services
             var timeSeriesData = new TimeSeriesData(unit, timeSeries);
 
             // Validera tidsseriedata, konvertera till rätt enhet och lägg till serie-id
-            var seriesId = await _repository.GetNextSeriesIdsAsync(1);
+            var seriesId = await _repository.GetNextSeriesIdsAsync();
             var result = await processor.Process(timeSeriesData, seriesId, cancellationToken);
             // In i datalagret
             var dbImportResult = await _repository.ImportTimeSeriesAsync(result.ValidTimeSeries, cancellationToken);

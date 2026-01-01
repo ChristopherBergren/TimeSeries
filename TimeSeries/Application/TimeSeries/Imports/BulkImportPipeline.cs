@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using TimeSeriesRoot.Application.TimeSeries.Interfaces;
 using TimeSeriesRoot.Application.TimeSeries.Models;
 using TimeSeriesRoot.Application.Imports;
+using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 
 namespace TimeSeriesRoot.Application.TimeSeries.Imports
 {
@@ -47,9 +48,9 @@ namespace TimeSeriesRoot.Application.TimeSeries.Imports
             if (!hasFiles)
                 return new ImportResult(false);
 
-            // Steg 2: Generera unika serieId:n och skicka med till nästa steg
-            var seriesId = await _repository.GetNextSeriesIdsAsync(files!.Count()) - files!.Count() + 1;
-            var seriesRecords = files!.Select(f => new SeriesRecord(seriesId++, f));
+            // Steg 2: Allokera serieId:n och kapsla in per serie
+            var nextSeriesId = await _repository.GetNextSeriesIdsAsync();
+            var seriesRecords = files!.Select(f => new SeriesRecord(nextSeriesId++, f));
 
             // Steg 3: Läs in filerna och konvertera till internt format
             await Parallel.ForEachAsync(

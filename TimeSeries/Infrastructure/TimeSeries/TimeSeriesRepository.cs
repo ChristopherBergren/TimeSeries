@@ -34,7 +34,9 @@ namespace TimeSeriesRoot.Infrastructure.TimeSeries
                     MgaName = item.MgaName!,
                     Quantity = item.GetQuantity(),
                     Timestamp = (DateTime)item.Timestamp!,
-                    TimestampUTC = (DateTime)item.TimestampUTC!
+                    TimestampUTC = (DateTime)item.TimestampUTC!,
+                    CreatedAt = DateTime.UtcNow, // Ignoreras vid update
+                    UpdatedAt = DateTime.UtcNow, // Ignoreras vid insert
                 });
             }
 
@@ -48,7 +50,8 @@ namespace TimeSeriesRoot.Infrastructure.TimeSeries
                 // Som Composite Key för att avgöra unikhet valde jag Timestamp/Mba/MgaCode
                 options.ColumnPrimaryKeyExpression = c => new { c.Timestamp, c.Mba, c.MgaCode };
                 // Om datapunkt existerar skall vi uppdatera, men SeriesId skall behålla originalvärdet (min tolkning)
-                options.IgnoreOnMergeUpdateExpression = c => new { c.SeriesId };
+                options.IgnoreOnMergeUpdateExpression = c => new { c.SeriesId, c.CreatedAt };
+                options.IgnoreOnMergeInsertExpression = c => new { c.UpdatedAt };
                 // Denna switch gör operationen något långsammare, men krävs för att få tillbaka antal inserts/updates
                 options.UseRowsAffected = true;
                 options.ResultInfo = resultInfo;
@@ -87,21 +90,6 @@ namespace TimeSeriesRoot.Infrastructure.TimeSeries
                 .Where(s => s.SeriesId == seriesId && s.Timestamp >= from && s.Timestamp <= to)
                 .Select(s => new TimeSeriesDto(s)).ToList();
         }
-        public async Task<int> GetNextSeriesIdsAsync(int noOfIds)
-        {
-            await using var transaction = await _context.Database.BeginTransactionAsync();
-
-            await _context.SeriesIdCounter.Where(c => c.Id == 1)
-                .ExecuteUpdateAsync(s => s.SetProperty(c => c.LatestSeriesId, c => c.LatestSeriesId + noOfIds));
-            await _context.SaveChangesAsync();
-            var lastSeriesId = await _context.SeriesIdCounter
-                .Where(c => c.Id == 1)
-                .Select(c => c.LatestSeriesId)
-                .SingleAsync();
-            
-            await transaction.CommitAsync();
-
-            return lastSeriesId;
-        }
+        public async Task<int> GetNextSeriesIdsAsync() => (await _context.TimeSeries.Select(s => (int?)s.SeriesId).MaxAsync() ?? 0) + 1;
     }
 }

@@ -14,7 +14,7 @@ namespace TimeSeriesRoot.Application.TimeSeries.BusinessRules
 
         public static bool IsValidMba(string? mba)
         {
-            return string.IsNullOrWhiteSpace(mba) || Rules.AllowedMbaValues.Contains(mba);
+            return string.IsNullOrWhiteSpace(mba) || Rules.AllowedMbaValues.Contains(mba.ToUpper());
         }
 
         public static DateTime? ConvertESettCsvDateToDateTime(string csvFileDateFormat)

@@ -18,6 +18,8 @@ namespace TimeSeriesRoot.Application.TimeSeries.Models
             Quantity = Math.Round(timeSeries.Quantity, 6).ToString("G");
             Timestamp = timeSeries.Timestamp;
             TimestampUTC = timeSeries.TimestampUTC;
+            CreatedAt = timeSeries.CreatedAt;
+            UpdatedAt = timeSeries.UpdatedAt;
         }
 
         public double GetQuantity()
@@ -40,5 +42,7 @@ namespace TimeSeriesRoot.Application.TimeSeries.Models
         public string? Quantity { get; set; }
         public DateTime? Timestamp { get; set; }
         public DateTime? TimestampUTC { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }

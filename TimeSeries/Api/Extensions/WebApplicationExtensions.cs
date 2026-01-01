@@ -11,15 +11,6 @@
 
             db.Database.EnsureCreated();
 
-            // Seed data 
-
-            // Räknare för att sätta SeriesId i TimeSeries vid importer. Endast en post
-            if (!db.SeriesIdCounter.Any())
-            {
-                db.SeriesIdCounter.Add(new Domain.Entities.SeriesIdCounter { LatestSeriesId = 0 });
-                db.SaveChanges();
-            }
-
             return app;
         }
     }

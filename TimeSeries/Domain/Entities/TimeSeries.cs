@@ -10,5 +10,7 @@
         public double Quantity { get; set; }
         public DateTime Timestamp { get; set; }
         public DateTime TimestampUTC { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }
