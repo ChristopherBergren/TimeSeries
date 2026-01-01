@@ -24,6 +24,7 @@ Time-Series Data Processor & API
   
 ---  
 **Test-instruktioner**
+- Se till att "Single startup project" för lösningen är satt till "TimeSeries"
 - **NOTERA: Koden har kommentarer där jag anser av nytta. Kommentarer i framförallt /Infrastructure/TimeSeries/TimeSeriesRepository.cs , /Application/TimeSeries/Imports/TimeSeriesProcessor.cs samt /Domain/Entities/TimeSeries.cs
   innehåller slutsatser jag fick dra om databas-designen, serie-id och upsert-förfarandet.**
 
