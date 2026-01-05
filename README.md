@@ -3,7 +3,7 @@ Time-Series Data Processor & API
 **Kortfattade lösningsnoteringar**
 - **Arkitektur**
   
-  Clean med Vertical Slice-orienterad mappstruktur i applikations- och infrastruktur-lagren. CQRS med commands/queries/handlers (MediatR)
+  Clean med lätt Feature-orienterad struktur i applikations- och infrastruktur-lagren. CQRS med commands/queries/handlers (MediatR)
 
 - **Datalager**
 
