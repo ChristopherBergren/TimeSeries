@@ -42,8 +42,8 @@ namespace TimeSeriesRoot.Infrastructure.TimeSeries
 
             // Notera att detta är en metod i Z.EntityFramework.Extensions, som är en licensbelagd 3:e-partskomponent.
             // https://entityframework-extensions.net/bulk-merge
-            // Den är dock extensivt använd, speciellt för stora mängder db-operationer, där EF Core helt enkelt är för långsamt,
-            // samt för att EF Core helt enkelt saknar merge-funktionalitet.
+            // Den är dock extensivt använd, speciellt för stora mängder db-operationer där EF Core är för långsamt
+            // samt helt enkelt saknar merge-funktionalitet.
             var resultInfo = new Z.BulkOperations.ResultInfo();
             await _context.BulkMergeAsync(timeSeries, options =>
             {
